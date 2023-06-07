@@ -9,7 +9,8 @@ from datetime import timedelta
 from wled import *
 from camera import *
 
-led_brightness = 10
+leds_init(255)
+led_brightness = 100
 blur_size = 10
 brightness_multiplier = 3
 
@@ -45,16 +46,14 @@ def display_sample_random():
 
 # list_ports()
 
-print("OpenCV version  " + cv2.__version__)
 capture = cv2.VideoCapture(1, cv2.CAP_DSHOW)
 if (capture.isOpened() == False):
     print("Error opening capture stream or file")
-
 frame_width = int(capture.get(3))
 frame_height = int(capture.get(4))
 print(f"Video resolution={frame_width}x{frame_height}")
 
-samples = [0, 0 + 15, 63, 63 - 15]
+samples = [0, 0 + 7, 63, 63 - 7]
 samples_count = len(samples)
 sample_index = 0
 interval = timedelta(seconds=1)
@@ -68,9 +67,9 @@ if ret:
 leds_off()
 time.sleep(1)
 ret, background = capture.read()
-background = cv2.blur(background, ksize=(blur_size, blur_size))
 if ret:
     cv2.imshow("Background", background)
+background = cv2.blur(background, ksize=(blur_size, blur_size))
 
 # Start capture
 led_set(samples[sample_index], led_brightness)
@@ -102,8 +101,7 @@ while capture.isOpened():
 
         # Draw detected blobs as red circles.
         # cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS ensures the size of the circle corresponds to the size of blob
-        im_with_keypoints = cv2.drawKeypoints(frameOrg, keypoints, np.array([]), (0, 0, 255),
-                                              cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        im_with_keypoints = cv2.drawKeypoints(frameOrg, keypoints, np.array([]), (0, 0, 255), cv2.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
 
         # Show keypoints
         cv2.imshow("Blobs", im_with_keypoints)
@@ -117,3 +115,4 @@ while capture.isOpened():
 
 capture.release()
 cv2.destroyAllWindows()
+leds_off()

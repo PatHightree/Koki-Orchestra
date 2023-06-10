@@ -50,7 +50,9 @@ async def main():
     dpg.setup_dearpygui()
 
     vid = cv.VideoCapture(1, cv.CAP_DSHOW)
-    ret, test = vid.read()
+    start = time.time()
+    while time.time() < start + 2:
+        ret, test = vid.read()
     texture_data = to_dpg(test)
 
     # image size or you can get this from image shape
@@ -60,14 +62,10 @@ async def main():
     print(f"Video resolution={frame_width}x{frame_height}@{video_fps}")
 
     with dpg.texture_registry(show=True):
-        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb,
-                            tag=background_tag, label=background_tag, )
-        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb,
-                            tag=sample_tag, label=sample_tag)
-        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb,
-                            tag=delta_tag, label=delta_tag)
-        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb,
-                            tag=blobs_tag, label=blobs_tag)
+        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb, tag=background_tag, label=background_tag)
+        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb, tag=sample_tag, label=sample_tag)
+        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb, tag=delta_tag, label=delta_tag)
+        dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb, tag=blobs_tag, label=blobs_tag)
     with dpg.window(label="Koki'orchestra"):
         dpg.add_slider_int(label="Capture brightness multiplier", tag="capture_brightness_multiplier")
         dpg.configure_item("capture_brightness_multiplier", min_value=1)
@@ -102,7 +100,7 @@ async def main():
         to_dpg_tag(delta, delta_tag)
 
         keypoints = detector.detect(delta)
-        if len(keypoints) is 1:
+        if len(keypoints) == 1:
             blobs.append(keypoints[0])
         im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         to_dpg_tag(im_with_keypoints, blobs_tag)

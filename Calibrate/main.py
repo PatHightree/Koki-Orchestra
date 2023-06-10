@@ -51,6 +51,16 @@ def sample_led(background_blur, detector, led_index, vid):
     keypoints = detector.detect(delta)
     if len(keypoints) == 1:
         blobs.append(keypoints[0])
+    else:
+        border_width = 10
+        sample = cv.rectangle(
+            sample,
+            (0, 0),
+            (sample.shape[1] - 1, sample.shape[0] - 1),
+            (0, 0, 255),  # (B, G, R)
+            border_width
+        )
+        led_index -= 1
     im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
     to_dpg_tag(im_with_keypoints, blobs_tag)
     return led_index

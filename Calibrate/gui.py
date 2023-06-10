@@ -17,7 +17,7 @@ def to_dpg_tag(cv_frame, tag):
 
 def init_gui(test, texture_data, switch_output, capture_brightness_multiplier):
     dpg.create_context()
-    dpg.create_viewport(title='Custom Title', width=1920, height=1080)
+    dpg.create_viewport(title="Koki'orchestra", width=1920, height=1080)
     dpg.setup_dearpygui()
     with dpg.texture_registry(show=True):
         dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb, tag=background_tag, label=background_tag)

@@ -1,7 +1,0 @@
-image_tag = "image"
-background_tag = "background"
-sample_tag = "sample"
-delta_tag = "delta"
-blobs_tag = "blobs"
-restart_tag = "restart"
-output_tag = "output"

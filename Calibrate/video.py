@@ -1,4 +1,20 @@
-import cv2
+import cv2 as cv
+import time
+from gui import to_dpg
+
+
+def init_video():
+    vid = cv.VideoCapture(1, cv.CAP_DSHOW)
+    start = time.time()
+    while time.time() < start + 2:
+        ret, test = vid.read()
+    texture_data = to_dpg(test)
+    # image size or you can get this from image shape
+    frame_width = int(vid.get(cv.CAP_PROP_FRAME_WIDTH))
+    frame_height = int(vid.get(cv.CAP_PROP_FRAME_HEIGHT))
+    video_fps = int(vid.get(cv.CAP_PROP_FPS))
+    print(f"Video resolution={frame_width}x{frame_height}@{video_fps}")
+    return vid, test, texture_data
 
 
 def list_ports():
@@ -11,7 +27,7 @@ def list_ports():
     working_ports = []
     available_ports = []
     while is_working:
-        camera = cv2.VideoCapture(dev_port)
+        camera = cv.VideoCapture(dev_port)
         if not camera.isOpened():
             is_working = False
             print("Port %s is not working." % dev_port)
@@ -27,5 +43,4 @@ def list_ports():
                 available_ports.append(dev_port)
         dev_port += 1
     return available_ports, working_ports
-
 

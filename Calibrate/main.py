@@ -118,7 +118,7 @@ def sample_led(background_blur, detector, led_index, vid):
     led_set(led_index, led_value)
 
     # when using sleep(), the first led isn't captured in time and the locations array gets misaligned
-    # time.sleep(0.1)
+    time.sleep(0.05)
     # recording multiple frames does yield correct results
     ret, sample = vid.read()
     ret, sample = vid.read()

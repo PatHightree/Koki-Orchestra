@@ -46,10 +46,10 @@ def init_gui(vid, test, texture_data, switch_output, start_calibrate_thread, cap
         dpg.add_raw_texture(test.shape[1], test.shape[0], texture_data, format=dpg.mvFormat_Float_rgb, tag=blobs_tag, label=blobs_tag)
     with dpg.window(tag=window_tag, label="Koki'orchestra", autosize=True):
         dpg.add_button(tag=calibrate_button_tag, label="Start calibration", callback=start_calibrate_thread, user_data=vid)
-        dpg.add_button(tag=orchestrate_button_tag, label="Orchestrate", callback=start_orchestrate_thread, user_data=vid)
+        dpg.add_button(tag=orchestrate_button_tag, label="Start orchestrating", callback=start_orchestrate_thread, user_data=vid)
         dpg.add_image(tag=image_tag, texture_tag=blobs_tag, show=True)
-        dpg.add_radio_button(tag=output_radio_tag, items=[background_tag, delta_tag, blobs_tag], default_value=blobs_tag, callback=switch_output, horizontal=True, show=False)
-        dpg.add_slider_int(tag=brightness_slider_tag, label="Capture brightness multiplier", min_value=1, max_value=10, default_value=capture_brightness_multiplier, show=False)
+        dpg.add_radio_button(tag=output_radio_tag, items=[background_tag, delta_tag, blobs_tag], default_value=blobs_tag, callback=switch_output, horizontal=True, show=True)
+        dpg.add_slider_int(tag=brightness_slider_tag, label="Capture brightness multiplier", min_value=1, max_value=10, default_value=capture_brightness_multiplier, show=True)
     dpg.show_metrics()
     dpg.show_viewport(maximized=True)
 

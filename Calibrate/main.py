@@ -1,13 +1,10 @@
 import asyncio
 import threading
 
-import cv2
-
 from wled import *
 from video import *
 from gui import *
 from location import *
-from operator import itemgetter, attrgetter
 
 camera_brightness_multiplier = 5
 display_brightness = 100
@@ -26,7 +23,7 @@ orchestrate_stop = False
 def start_orchestrate_thread(sender, app_data, user_data):
     global orchestrate_running, orchestrate_stop
 
-    # dpg.configure_item(orchestrate_button_tag, show=True if calibrate_running else False)
+    dpg.configure_item(orchestrate_button_tag, label="Start orchestrating" if orchestrate_running else "Stop orchestrating")
     if orchestrate_running:
         orchestrate_stop = True
     else:
@@ -64,7 +61,7 @@ def orchestrate(vid):
         leds_set(values)
 
         ret, blobs = vid.read()
-        blobs = cv.drawKeypoints(blobs, keypoints, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        # blobs = cv.drawKeypoints(blobs, keypoints, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         to_dpg_tag(blobs, blobs_tag)
     orchestrate_running = False
 
@@ -72,8 +69,8 @@ def orchestrate(vid):
 def start_calibrate_thread(sender, app_data, user_data):
     global calibrate_running, calibrate_stop
     dpg.configure_item(calibrate_button_tag, label="Start calibration" if calibrate_running else "Stop calibration")
-    dpg.configure_item(output_radio_tag, show=False if calibrate_running else True)
-    dpg.configure_item(brightness_slider_tag, show=False if calibrate_running else True)
+    # dpg.configure_item(output_radio_tag, show=False if calibrate_running else True)
+    # dpg.configure_item(brightness_slider_tag, show=False if calibrate_running else True)
     if calibrate_running:
         calibrate_stop = True
     else:
@@ -103,19 +100,14 @@ def calibrate(vid):
 
 
 async def main():
-    global calibrate_stop
     leds_init(display_brightness)
     leds_off()
-
     vid, test, texture_data = init_video()
     init_gui(vid, test, texture_data, switch_output, start_calibrate_thread, camera_brightness_multiplier, start_orchestrate_thread)
 
     while dpg.is_dearpygui_running():
         dpg.render_dearpygui_frame()
 
-    # calibrate_stop = True
-    # while calibrate_running:
-    #     time.sleep(0.1)
     vid.release()
     dpg.destroy_context()
     leds_off()

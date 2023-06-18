@@ -87,7 +87,7 @@ def calibrate(vid):
     to_dpg_tag(background_blur, background_tag)
 
     detector = cv.SimpleBlobDetector_create()
-    led_index = -1
+    led_index = 0
     blobs.clear()
     locations.clear()
     for l in range(led_count):
@@ -96,7 +96,8 @@ def calibrate(vid):
     calibrate_running = True
     calibrate_stop = False
     while not calibrate_stop:
-        led_index = sample_led(background_blur, detector, led_index, vid)
+        sample_led(background_blur, detector, led_index, vid)
+        led_index = (led_index + 1) % led_count
     calibrate_running = False
     leds_off()
 
@@ -121,13 +122,16 @@ async def main():
 
 
 def sample_led(background_blur, detector, led_index, vid):
-    led_set(led_index, 0)
-    led_index = (led_index + 1) % led_count
+    led_set((led_index - 1) % led_count, 0)
     led_set(led_index, led_value)
 
-    time.sleep(0.1)
-
+    # when using sleep(), the first led isn't captured in time and the locations array gets misaligned
+    # time.sleep(0.1)
+    # recording multiple frames does yield correct results
     ret, sample = vid.read()
+    ret, sample = vid.read()
+    ret, sample = vid.read()
+
     to_dpg_tag(sample, sample_tag)
     sample_blur = cv.blur(sample, ksize=(blur_size, blur_size))
     delta = cv.subtract(sample_blur, background_blur)
@@ -144,8 +148,6 @@ def sample_led(background_blur, detector, led_index, vid):
             blob_index = locations[led_index].blob_index
             blobs[blob_index] = keypoints[0]
             locations[led_index].set(blob_index, keypoints[0])
-        im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-        to_dpg_tag(im_with_keypoints, blobs_tag)
     else:
         border_width = 10
         sample = cv.rectangle(
@@ -155,8 +157,8 @@ def sample_led(background_blur, detector, led_index, vid):
             (0, 0, 255),  # (B, G, R)
             border_width)
         to_dpg_tag(sample, sample_tag)
-        led_index -= 1
-    return led_index
+    im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    to_dpg_tag(im_with_keypoints, blobs_tag)
 
 
 asyncio.run(main())

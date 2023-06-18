@@ -9,7 +9,9 @@ class Location:
     keypoint = object
 
     def __init__(self):
-        pass
+        self.initialized = False
+        self.blob_index = -1
+        self.keypoint = None
 
     def set(self, blob_index, keypoint):
         self.initialized = True

@@ -58,7 +58,7 @@ def orchestrate(vid):
                 values.append([index, [value, value, value]])
             else:
                 values.append([index, [0, 0, 0]])
-        leds_set(values)
+        leds_set_rle(values)
 
         ret, blobs = vid.read()
         # blobs = cv.drawKeypoints(blobs, keypoints, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
@@ -96,20 +96,6 @@ def calibrate(vid):
         sample_led(background_blur, detector, led_index, vid)
         led_index = (led_index + 1) % led_count
     calibrate_running = False
-    leds_off()
-
-
-async def main():
-    leds_init(display_brightness)
-    leds_off()
-    vid, test, texture_data = init_video()
-    init_gui(vid, test, texture_data, switch_output, start_calibrate_thread, camera_brightness_multiplier, start_orchestrate_thread)
-
-    while dpg.is_dearpygui_running():
-        dpg.render_dearpygui_frame()
-
-    vid.release()
-    dpg.destroy_context()
     leds_off()
 
 
@@ -151,6 +137,22 @@ def sample_led(background_blur, detector, led_index, vid):
         to_dpg_tag(sample, sample_tag)
     im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
     to_dpg_tag(im_with_keypoints, blobs_tag)
+
+
+async def main():
+    leds_init(display_brightness)
+    leds_off()
+    # leds_set([[0, [50, 50, 50]], [1, [50, 50, 50]], [2, [50, 50, 50]]])
+
+    vid, test, texture_data = init_video()
+    init_gui(vid, test, texture_data, switch_output, start_calibrate_thread, camera_brightness_multiplier, start_orchestrate_thread)
+
+    while dpg.is_dearpygui_running():
+        dpg.render_dearpygui_frame()
+
+    vid.release()
+    dpg.destroy_context()
+    leds_off()
 
 
 asyncio.run(main())

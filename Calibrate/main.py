@@ -8,8 +8,7 @@ from location import *
 
 camera_brightness_multiplier = 5
 display_brightness = 100
-led_value = 70
-led_count = 64
+calibrate_value = 70
 blur_size = 10
 delay = 100
 retries = 5
@@ -93,16 +92,32 @@ def calibrate(vid):
 
     calibrate_running = True
     calibrate_stop = False
-    while not calibrate_stop:
+    calibrated = 0
+    while not calibrate_stop and calibrated < led_count:
         sample_led(background_blur, detector, led_index, vid)
+        if locations[led_index].initialized:
+            calibrated += 1
+        else:
+            calibrated = 0
         led_index = (led_index + 1) % led_count
     calibrate_running = False
     leds_off()
+    time.sleep(0.1)
+
+    ret, sample = vid.read()
+    ret, sample = vid.read()
+    ret, sample = vid.read()
+    im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+    to_dpg_tag(im_with_keypoints, blobs_tag)
+    dpg.configure_item(calibrate_button_tag, label="Start calibration")
 
 
 def sample_led(background_blur, detector, led_index, vid):
-    led_set((led_index - 1) % led_count, 0)
-    led_set(led_index, led_value)
+    if locations[led_index].initialized:
+        return True
+
+    leds_off()
+    led_set(led_index, calibrate_value)
 
     attempts = 1
     success = False
@@ -143,12 +158,12 @@ def sample_led(background_blur, detector, led_index, vid):
             to_dpg_tag(sample, sample_tag)
         im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
         to_dpg_tag(im_with_keypoints, blobs_tag)
+        return success
 
 
 async def main():
     leds_init(display_brightness)
     leds_off()
-    # leds_set([[0, [50, 50, 50]], [1, [50, 50, 50]], [2, [50, 50, 50]]])
 
     vid, test, texture_data = init_video()
     init_gui(vid, test, texture_data, switch_output, start_calibrate_thread, camera_brightness_multiplier, start_orchestrate_thread)

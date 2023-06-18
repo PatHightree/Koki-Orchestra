@@ -2,7 +2,7 @@ import requests
 
 # url = 'http://192.168.122.149/json/state'
 url = 'http://192.168.122.185/json/state'
-
+led_count = 64
 
 def rgb_to_hex(r, g, b):
     return "{0:02x}{1:02x}{2:02x}".format(r, g, b)
@@ -18,7 +18,7 @@ def leds_init(brightness):
 
 
 def leds_off():
-    command = {"seg": {"i": [0, 64, [0, 0, 0]]}}
+    command = {"seg": {"i": [0, led_count, [0, 0, 0]]}}
     requests.post(url, json=command)
 
 
@@ -54,8 +54,7 @@ def leds_set_rle(values):
             a.append(j+1)
             a.append(values[i][1])
         i = j+1
-
-    # command = {"seg":{"i":[0,[0,0,0],32,[0,0,0]]}}
+    # command = {"seg":{"i":[0,32,[0,0,0],32,64,[0,0,0]]}}  # end of range is inclusive!
     command = {"seg": {"i": a}}
     requests.post(url, json=command)
 

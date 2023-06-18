@@ -12,6 +12,7 @@ led_value = 70
 led_count = 64
 blur_size = 10
 delay = 100
+retries = 5
 blobs = []
 locations = []
 calibrate_running = False
@@ -103,40 +104,45 @@ def sample_led(background_blur, detector, led_index, vid):
     led_set((led_index - 1) % led_count, 0)
     led_set(led_index, led_value)
 
-    # when using sleep(), the first led isn't captured in time and the locations array gets misaligned
-    time.sleep(0.05)
-    # recording multiple frames does yield correct results
-    ret, sample = vid.read()
-    ret, sample = vid.read()
-    ret, sample = vid.read()
+    attempts = 1
+    success = False
+    while attempts < retries and not success:
+        # when using sleep(), the first led isn't captured in time and the locations array gets misaligned
+        time.sleep(0.05)
+        # recording multiple frames does yield correct results
+        ret, sample = vid.read()
+        ret, sample = vid.read()
+        ret, sample = vid.read()
 
-    to_dpg_tag(sample, sample_tag)
-    sample_blur = cv.blur(sample, ksize=(blur_size, blur_size))
-    delta = cv.subtract(sample_blur, background_blur)
-    delta = delta * dpg.get_value(brightness_slider_tag)
-    # delta = ~delta
-    to_dpg_tag(delta, delta_tag)
-
-    keypoints = detector.detect(delta)
-    if len(keypoints) == 1:
-        if not locations[led_index].initialized:
-            locations[led_index].set(len(blobs), keypoints[0])
-            blobs.append(keypoints[0])
-        else:
-            blob_index = locations[led_index].blob_index
-            blobs[blob_index] = keypoints[0]
-            locations[led_index].set(blob_index, keypoints[0])
-    else:
-        border_width = 10
-        sample = cv.rectangle(
-            sample,
-            (0, 0),
-            (sample.shape[1] - 1, sample.shape[0] - 1),
-            (0, 0, 255),  # (B, G, R)
-            border_width)
         to_dpg_tag(sample, sample_tag)
-    im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
-    to_dpg_tag(im_with_keypoints, blobs_tag)
+        sample_blur = cv.blur(sample, ksize=(blur_size, blur_size))
+        delta = cv.subtract(sample_blur, background_blur)
+        delta = delta * dpg.get_value(brightness_slider_tag)
+        # delta = ~delta
+        to_dpg_tag(delta, delta_tag)
+
+        keypoints = detector.detect(delta)
+        if len(keypoints) == 1:
+            success = True
+            if not locations[led_index].initialized:
+                locations[led_index].set(len(blobs), keypoints[0])
+                blobs.append(keypoints[0])
+            else:
+                blob_index = locations[led_index].blob_index
+                blobs[blob_index] = keypoints[0]
+                locations[led_index].set(blob_index, keypoints[0])
+        else:
+            attempts += 1
+            border_width = 10
+            sample = cv.rectangle(
+                sample,
+                (0, 0),
+                (sample.shape[1] - 1, sample.shape[0] - 1),
+                (0, 0, 255),  # (B, G, R)
+                border_width)
+            to_dpg_tag(sample, sample_tag)
+        im_with_keypoints = cv.drawKeypoints(sample, blobs, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        to_dpg_tag(im_with_keypoints, blobs_tag)
 
 
 async def main():

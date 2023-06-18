@@ -30,6 +30,14 @@ def start_orchestrate_thread(sender, app_data, user_data):
         threading.Thread(target=orchestrate, daemon=True, args=(user_data,)).start()
 
 
+def radial_sine(dist, diameter, brightness, start):
+    # Emitting  radial rings
+    f = np.abs(np.sin(time.time()-start + np.clip((1 - dist / diameter), 0, 1) * np.pi))
+    # Fade out with distance
+    f *= 1 - dist / (diameter * 2)
+    return int(brightness * f)
+
+
 def orchestrate(vid):
     global orchestrate_running, orchestrate_stop
 
@@ -44,6 +52,7 @@ def orchestrate(vid):
     image_pos = dpg.get_item_pos(image_tag)
     diameter = 30
     brightness = 127
+    start = time.time()
 
     # dpg.show_debug()
     # print(f"Image pos {dpg.get_item_pos(image_tag)}")
@@ -55,7 +64,7 @@ def orchestrate(vid):
         for index, location in enumerate(locations):
             if location.initialized:
                 d = location.distance(mouse_pos_relative)
-                value = int(brightness * np.clip((1 - d / diameter), 0, 1))
+                value = radial_sine(d ,diameter, brightness, start)
                 values.append([index, [0, value, 0]])
             else:
                 values.append([index, [0, 0, 0]])

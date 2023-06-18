@@ -42,6 +42,8 @@ def orchestrate(vid):
     leds_off()
     values = []
     image_pos = dpg.get_item_pos(image_tag)
+    diameter = 30
+    brightness = 127
 
     # dpg.show_debug()
     # print(f"Image pos {dpg.get_item_pos(image_tag)}")
@@ -53,15 +55,16 @@ def orchestrate(vid):
         for index, location in enumerate(locations):
             if location.initialized:
                 d = location.distance(mouse_pos_relative)
-                diameter = 50
-                value = int(led_value * np.clip((1 - d / diameter), 0, 1))
-                values.append([index, [value, value, value]])
+                value = int(brightness * np.clip((1 - d / diameter), 0, 1))
+                values.append([index, [0, value, 0]])
             else:
                 values.append([index, [0, 0, 0]])
         leds_set_rle(values)
 
         ret, blobs = vid.read()
         # blobs = cv.drawKeypoints(blobs, keypoints, np.array([]), (0, 0, 255), cv.DRAW_MATCHES_FLAGS_DRAW_RICH_KEYPOINTS)
+        center = (int(mouse_pos_relative[0]), int(mouse_pos_relative[1]))
+        blobs = cv.circle(blobs, center, diameter, (0, 0, 255), 2)
         to_dpg_tag(blobs, blobs_tag)
     orchestrate_running = False
 
